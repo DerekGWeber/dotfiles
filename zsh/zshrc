@@ -1,0 +1,146 @@
+# ~/.zshrc - symlinked from ~/dotfiles/zsh/zshrc
+# Unified zsh config for the fleet: macOS, Raspberry Pi, OpenWrt, DreamHost
+# Last updated 2026-06-20 by Derek G. Weber
+
+# ---- Platform detection ----
+OS="$(uname -s)"
+HOST_SHORT="$(hostname -s 2>/dev/null || hostname)"
+IS_OPENWRT=0
+[ -f /etc/openwrt_release ] && IS_OPENWRT=1
+
+# ---- Homebrew / PATH ----
+if [ "$OS" = "Darwin" ]; then
+    if [ -x /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -x /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+fi
+# Linuxbrew (Raspberry Pi), if installed
+[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+export PATH="$HOME/.local/bin:$PATH"
+
+# ---- Editor: nvim if present, else vim (nit 6) ----
+if command -v nvim >/dev/null 2>&1; then
+    export EDITOR=nvim VISUAL=nvim
+    alias vim=nvim
+else
+    export EDITOR=vim VISUAL=vim
+fi
+
+# ---- History ----
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
+setopt EXTENDED_HISTORY       # record timestamps
+setopt INC_APPEND_HISTORY     # append as commands run
+setopt SHARE_HISTORY          # share across sessions
+setopt HIST_IGNORE_SPACE      # a leading space hides a command from history
+setopt HIST_IGNORE_ALL_DUPS   # drop older duplicate commands
+setopt HIST_REDUCE_BLANKS
+setopt NO_CLOBBER             # need >| to overwrite an existing file
+
+# ---- Completion ----
+autoload -Uz compinit
+if [ "$OS" = "Darwin" ]; then
+    compinit
+else
+    compinit -u   # skip insecure-dir abort on DreamHost + OpenWrt (nit 9)
+fi
+
+# ---- Zsh plugins (paths vary by platform) ----
+_load_plugin() {
+    local name="$1" base
+    for base in \
+        "$(brew --prefix 2>/dev/null)/share" \
+        "/usr/share/zsh/plugins" \
+        "/usr/share" \
+        "$HOME/.zsh"; do
+        if [ -r "$base/$name/$name.zsh" ]; then
+            source "$base/$name/$name.zsh"
+            return 0
+        fi
+    done
+    return 1
+}
+_load_plugin zsh-autosuggestions
+_load_plugin zsh-history-substring-search
+_load_plugin zsh-syntax-highlighting   # must be sourced last
+
+# history-substring-search: bind arrows + vi keys
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+# ---- Prompt: starship, per-host tinted config when present ----
+if command -v starship >/dev/null 2>&1; then
+    if [ -f "$HOME/.config/starship-$HOST_SHORT.toml" ]; then
+        export STARSHIP_CONFIG="$HOME/.config/starship-$HOST_SHORT.toml"
+    else
+        export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+    fi
+    eval "$(starship init zsh)"
+fi
+
+# ---- Aliases ----
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Listing: eza when available. No icons on bare 'ls' so pipes stay clean (nit 10);
+# --icons=auto only renders on a TTY for the interactive variants.
+if command -v eza >/dev/null 2>&1; then
+    alias ls='eza --group-directories-first'
+    alias l='eza -1 --group-directories-first'
+    alias la='eza -lah --icons=auto --group-directories-first'
+    alias ll='eza -lah --icons=auto --git --group-directories-first'
+    alias lt='eza --tree --level=2 --icons=auto'
+else
+    alias l='ls -1'
+    alias la='ls -lah'
+    alias ll='ls -lah'
+fi
+
+# No cat->bat alias on purpose: cat must emit raw bytes (SSH keys, pipes).
+# Use an explicit pretty-pager alias instead.
+if command -v bat >/dev/null 2>&1; then
+    alias catp='bat'
+elif command -v batcat >/dev/null 2>&1; then
+    alias catp='batcat'
+fi
+
+# trash-cli safety net where installed (macOS fleet); plain rm elsewhere
+command -v trash >/dev/null 2>&1 && alias rmi='trash'
+
+# git
+alias gs='git status'
+alias gd='git diff'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline --graph --decorate -20'
+
+# ---- Dotfiles + fleet helpers ----
+alias ezc='$EDITOR ~/dotfiles/zsh/zshrc'                                  # edit zshrc
+alias estar='$EDITOR "${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"'   # edit active prompt
+alias reload='exec zsh'                                                  # reload shell
+alias ts='tailscale'
+alias tss='tailscale status'
+fleet() { grep -E '^Host ' "$HOME/.ssh/config" 2>/dev/null | sed 's/^Host /  /'; }  # list ssh aliases
+
+# ---- Tool integrations (guarded) ----
+command -v thefuck >/dev/null 2>&1 && eval "$(thefuck --alias)"   # nit 5
+command -v direnv  >/dev/null 2>&1 && eval "$(direnv hook zsh)"
+command -v pyenv   >/dev/null 2>&1 && eval "$(pyenv init - 2>/dev/null)"
+if command -v fzf >/dev/null 2>&1; then
+    if fzf --zsh >/dev/null 2>&1; then
+        source <(fzf --zsh)
+    elif [ -r "$(brew --prefix 2>/dev/null)/opt/fzf/shell/key-bindings.zsh" ]; then
+        source "$(brew --prefix)/opt/fzf/shell/key-bindings.zsh"
+    fi
+fi
+
+# ---- Machine-local overrides (uncommitted), sourced last ----
+[ -r "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"

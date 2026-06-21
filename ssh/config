@@ -1,0 +1,42 @@
+# ~/.ssh/config - symlinked from ~/dotfiles/ssh/config
+# Last updated 2026-06-20 by Derek G. Weber
+
+# Per-host / private overrides (uncommitted), e.g. a different IdentityFile per device
+Include ~/.ssh/config.local
+
+Host *
+    IgnoreUnknown UseKeychain
+    AddKeysToAgent yes
+    UseKeychain yes
+    IdentityFile ~/.ssh/id_ed25519_dgdw-mba-m4
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# ---- Charlotte fleet (Tailscale MagicDNS, tailnet tail776841.ts.net) ----
+
+# Raspberry Pi 5 - services host + primary exit node (dwgc-clt-svr-002)
+# Tailscale SSH is enabled on this node; the tailnet is the auth boundary.
+Host pi dwgc-clt-svr-002
+    HostName dwgc-clt-svr-002
+    User derekgerald
+    # Online as dwgc-clt-exit-001 until the NVMe rebuild + rename
+    # LAN (Trusted VLAN): 192.168.10.12   Tailscale IP: 100.115.68.61
+
+# Mac Mini - primary compute + media server (dwgc-clt-svr-001)
+Host mini dwgc-clt-svr-001
+    HostName dwgc-clt-svr-001
+    User derekgerald
+    # Shared host (Derek + Gerald), single shared login
+
+# GL.iNet Spitz AX router, OpenWrt (dwgc-clt-rtr-001). spitz == router, same box.
+Host spitz router dwgc-clt-rtr-001
+    HostName dwgc-clt-rtr-001
+    User root
+    # LAN admin / LuCI + SSH: 192.168.10.1 (key-only, password auth off)
+
+# ---- DreamHost shared hosting (not on the tailnet) ----
+Host dreamhost
+    HostName derekweber.com
+    User derekweb
+    # Lands on iad1-shared-d12-05.dreamhost.com (iad1-shared cluster)
+    # Remote shell is zsh; no diff-so-fancy, so set core.pager in ~/.gitconfig.local there

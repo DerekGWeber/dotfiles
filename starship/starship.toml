@@ -1,0 +1,71 @@
+# starship.toml - base prompt, fleet standard (neutral accent)
+# install.sh generates per-host starship-<hostname>.toml from this file,
+# swapping the palette 'accent' to the host tint:
+#   Air blue / MBP green / Mac Mini purple / Pi red / Spitz yellow / DreamHost orange
+# Last updated 2026-06-20 by Derek G. Weber
+
+add_newline = true
+palette = "fleet"
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$line_break\
+$character"""
+
+right_format = "$status$cmd_duration$time"
+
+[palettes.fleet]
+accent = "cyan"
+
+[username]
+show_always = false
+style_user = "bold white"
+style_root = "bold red"
+format = "[$user]($style)@"
+
+[hostname]
+ssh_only = true
+style = "bold accent"
+format = "[$hostname]($style) "
+
+[directory]
+truncation_length = 4
+truncate_to_repo = true
+style = "bold accent"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "bold yellow"
+
+[git_state]
+style = "bold red"
+
+[character]
+success_symbol = "[>](bold accent)"
+error_symbol = "[>](bold red)"
+vimcmd_symbol = "[<](bold yellow)"
+
+[status]
+disabled = false
+symbol = "x "
+format = "[$symbol$status]($style) "
+style = "bold red"
+
+[cmd_duration]
+min_time = 2000
+format = "[$duration]($style) "
+style = "bold yellow"
+
+[time]
+disabled = false
+time_format = "%H:%M"
+format = "[$time](dimmed white)"

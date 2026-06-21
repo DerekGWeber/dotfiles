@@ -1,3 +1,11 @@
+# Brewfile - unified dev environment (Mac fleet standard)
+# Last updated 2026-06-20 by Derek G. Weber
+# Run: brew bundle --file=~/dotfiles/Brewfile
+
+# ---- Taps ----
+tap "hashicorp/tap"   # Terraform (Homebrew core dropped it after the BSL relicense)
+
+# ---- Core CLI ----
 brew "openssl@3"
 brew "tree"
 brew "ansible"
@@ -36,7 +44,7 @@ brew "rsync"
 brew "screen"
 brew "ssh-copy-id"
 brew "starship"
-brew "terraform"
+brew "hashicorp/tap/terraform"
 brew "thefuck"
 brew "tldr"
 brew "tmux"
@@ -47,10 +55,20 @@ brew "watch"
 brew "wget"
 brew "wrk"
 brew "yq"
+
+# ---- Zsh plugins ----
 brew "zsh-autosuggestions"
+brew "zsh-history-substring-search"
 brew "zsh-syntax-highlighting"
+
+# ---- GUI casks ----
 cask "chromedriver"
 cask "claude-code"
+cask "claude"
+cask "ghostty"
+cask "gcloud-cli"
+
+# ---- Nerd Fonts ----
 cask "font-0xproto-nerd-font"
 cask "font-3270-nerd-font"
 cask "font-bigblue-terminal-nerd-font"
@@ -74,27 +92,7 @@ cask "font-terminess-ttf-nerd-font"
 cask "font-ubuntu-mono-nerd-font"
 cask "font-ubuntu-nerd-font"
 cask "font-ubuntu-sans-nerd-font"
-cask "gcloud-cli"
-cask "iterm2"
-mas "Canva", id: 897446215
-mas "Compressor", id: 424390742
-mas "Conjuu ES Pro", id: 1550290686
-mas "Endel", id: 1346247457
-mas "Evernote", id: 406056744
-mas "Final Cut Pro", id: 424389933
-mas "GarageBand", id: 682658836
+
+# ---- Mac App Store (Air-trimmed) ----
 mas "iStat Menus", id: 1319778037
-mas "Keynote", id: 409183694
-mas "Kindle", id: 302584613
-mas "Logic Pro", id: 634148309
-mas "MainStage", id: 634159523
-mas "Messenger", id: 1480068668
-mas "Motion", id: 434290957
-mas "NordVPN", id: 905953485
-mas "Numbers", id: 409203825
-mas "OneDrive", id: 823766827
-mas "Pages", id: 409201541
 mas "Speedtest", id: 1153157709
-mas "Steam Link", id: 1246969117
-mas "Wayback Machine", id: 1472432422
-mas "WhatsApp", id: 310633997

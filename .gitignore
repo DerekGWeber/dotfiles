@@ -1,11 +1,20 @@
-#macOS
+# macOS
 .DS_Store
 
-#Editor files
+# Editor files
 *.swp
 *.swo
 *~
 
-#Backup files
+# Backup files
 *.bak
 *.backup
+
+# Secrets - never commit
+.env
+.env.*
+*.local
+id_*
+*.key
+*.pem
+known_hosts
