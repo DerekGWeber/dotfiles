@@ -1,6 +1,6 @@
 # ~/.zshrc - symlinked from ~/dotfiles/zsh/zshrc
 # Unified zsh config for the fleet: macOS, Raspberry Pi, OpenWrt, DreamHost
-# Last updated 2026-06-20 by Derek G. Weber
+# Last updated 2026-06-21 by Derek G. Weber
 
 # ---- Platform detection ----
 OS="$(uname -s)"
@@ -39,6 +39,7 @@ setopt HIST_IGNORE_SPACE      # a leading space hides a command from history
 setopt HIST_IGNORE_ALL_DUPS   # drop older duplicate commands
 setopt HIST_REDUCE_BLANKS
 setopt NO_CLOBBER             # need >| to overwrite an existing file
+setopt INTERACTIVE_COMMENTS   # allow # comments at the interactive prompt (e.g. pasted commands)
 
 # ---- Completion ----
 autoload -Uz compinit
@@ -129,6 +130,73 @@ alias reload='exec zsh'                                                  # reloa
 alias ts='tailscale'
 alias tss='tailscale status'
 fleet() { grep -E '^Host ' "$HOME/.ssh/config" 2>/dev/null | sed 's/^Host /  /'; }  # list ssh aliases
+
+# ---- Productivity helpers ----
+# Public + LAN IP
+myip() {
+    local pub
+    pub="$(curl -fsS https://ifconfig.me 2>/dev/null || curl -fsS https://icanhazip.com 2>/dev/null)"
+    printf 'Public : %s\n' "${pub:-unavailable}"
+    if [ "$OS" = "Darwin" ]; then
+        printf 'LAN    : %s\n' "$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo unavailable)"
+    elif command -v ip >/dev/null 2>&1; then
+        printf 'LAN    : %s\n' "$(ip -4 addr show scope global | awk '/inet/{print $2}' | head -1)"
+    fi
+}
+
+# Listening TCP/UDP ports (prefix with sudo on macOS to see every owner)
+ports() {
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -iTCP -sTCP:LISTEN -nP
+    elif command -v ss >/dev/null 2>&1; then
+        ss -tulpn
+    else
+        netstat -tulpn 2>/dev/null
+    fi
+}
+
+# Extract almost any archive: extract <file>
+extract() {
+    [ -f "$1" ] || { echo "extract: '$1' is not a file"; return 1; }
+    case "$1" in
+        *.tar.bz2|*.tbz2) tar xjf "$1" ;;
+        *.tar.gz|*.tgz)   tar xzf "$1" ;;
+        *.tar.xz)         tar xJf "$1" ;;
+        *.tar)            tar xf  "$1" ;;
+        *.bz2)            bunzip2 "$1" ;;
+        *.gz)             gunzip  "$1" ;;
+        *.zip)            unzip   "$1" ;;
+        *.7z)             7z x    "$1" ;;
+        *.rar)            unar    "$1" ;;
+        *.Z)              uncompress "$1" ;;
+        *) echo "extract: don't know how to extract '$1'"; return 1 ;;
+    esac
+}
+
+# Make a directory (and parents) then cd into it
+mkcd() { mkdir -p "$1" && cd "$1"; }
+
+# History: 'h' lists the last 50 commands, 'h <term>' greps all history
+h() {
+    if [ "$#" -eq 0 ]; then
+        fc -l -50
+    else
+        fc -l 1 | grep -i "$*"
+    fi
+}
+
+# Kill processes: 'killit <pattern>' (pkill -f), or bare 'killit' to pick via fzf
+killit() {
+    if [ -n "${1:-}" ]; then
+        pkill -f "$1"
+    elif command -v fzf >/dev/null 2>&1; then
+        local pids
+        pids="$(ps -eo pid,comm,args | sed 1d | fzf -m --header='Select process(es) to kill' | awk '{print $1}')"
+        [ -n "$pids" ] && echo "$pids" | xargs kill
+    else
+        echo "killit: pass a process-name pattern, or install fzf for interactive mode"
+    fi
+}
 
 # ---- Tool integrations (guarded) ----
 command -v thefuck >/dev/null 2>&1 && eval "$(thefuck --alias)"   # nit 5
