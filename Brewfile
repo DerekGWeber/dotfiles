@@ -1,5 +1,5 @@
 # Brewfile - unified dev environment (Mac fleet standard)
-# Last updated 2026-06-20 by Derek G. Weber
+# Last updated 2026-06-21 by Derek G. Weber
 # Run: brew bundle --file=~/dotfiles/Brewfile
 
 # ---- Taps ----
@@ -12,6 +12,7 @@ brew "ansible"
 brew "awscli"
 brew "azure-cli"
 brew "bat"
+brew "btop"
 brew "csvkit"
 brew "curl"
 brew "diff-so-fancy"
@@ -94,5 +95,4 @@ cask "font-ubuntu-nerd-font"
 cask "font-ubuntu-sans-nerd-font"
 
 # ---- Mac App Store (Air-trimmed) ----
-mas "iStat Menus", id: 1319778037
 mas "Speedtest", id: 1153157709
