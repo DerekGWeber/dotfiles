@@ -127,8 +127,18 @@ alias gl='git log --oneline --graph --decorate -20'
 alias ezc='$EDITOR ~/dotfiles/zsh/zshrc'                                  # edit zshrc
 alias estar='$EDITOR "${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"'   # edit active prompt
 alias reload='exec zsh'                                                  # reload shell
-alias ts='tailscale'
-alias tss='tailscale status'
+# Tailscale CLI: the macOS app keeps its binary inside the app bundle, not on PATH.
+# On Linux fleet hosts (Pi, Spitz, DreamHost) tailscale is already on PATH, so this is a no-op there.
+if command -v tailscale >/dev/null 2>&1; then
+    _ts_bin='tailscale'
+elif [ -x '/Applications/Tailscale.app/Contents/MacOS/Tailscale' ]; then
+    _ts_bin='/Applications/Tailscale.app/Contents/MacOS/Tailscale'
+else
+    _ts_bin='tailscale'
+fi
+alias ts="$_ts_bin"
+alias tss="$_ts_bin status"
+unset _ts_bin
 fleet() { grep -E '^Host ' "$HOME/.ssh/config" 2>/dev/null | sed 's/^Host /  /'; }  # list ssh aliases
 
 # ---- Productivity helpers ----
