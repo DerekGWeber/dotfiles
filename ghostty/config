@@ -1,0 +1,33 @@
+# ~/.config/ghostty/config - symlinked from ~/dotfiles/ghostty/config
+# Ghostty terminal config, Mac fleet standard
+# Last updated 2026-06-21 by Derek G. Weber
+
+# ---- Font ----
+font-family = "JetBrainsMono Nerd Font"
+font-size = 14
+
+# ---- Theme + transparency ----
+theme = "catppuccin-mocha"
+background-opacity = 0.96
+background-blur-radius = 20
+
+# ---- Window ----
+window-padding-x = 12
+window-padding-y = 8
+macos-titlebar-style = "tabs"
+macos-option-as-alt = left   # left Option -> Meta (Esc+) for zsh/nvim; right Option still types accents
+
+# ---- Cursor + shell integration ----
+cursor-style = block
+cursor-style-blink = false
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# ---- Behavior ----
+scrollback-limit = 10000000   # ~10 MB of scrollback (value is in bytes, not lines)
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+confirm-close-surface = false
+
+# ---- Keybinds ----
+keybind = cmd+shift+comma=reload_config   # also Ghostty's macOS default; explicit here for the fleet

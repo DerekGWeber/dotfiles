@@ -75,6 +75,12 @@ mkdir -p "$HOME/.ssh"; chmod 700 "$HOME/.ssh"
 link "$DOTFILES/ssh/config" "$HOME/.ssh/config"
 [ -f "$HOME/.ssh/config.local" ] || { printf '# Per-host ssh overrides (uncommitted)\n' > "$HOME/.ssh/config.local"; chmod 600 "$HOME/.ssh/config.local"; info "seed: ~/.ssh/config.local"; }
 
+# ---- ghostty (macOS fleet terminal) ----
+if [ "$OS" = "Darwin" ]; then
+    mkdir -p "$HOME/.config/ghostty"
+    link "$DOTFILES/ghostty/config" "$HOME/.config/ghostty/config"
+fi
+
 # ---- Homebrew bundle (macOS only) ----
 if [ "$OS" = "Darwin" ] && [ "$DO_BREW" = "1" ]; then
     if command -v brew >/dev/null 2>&1; then
